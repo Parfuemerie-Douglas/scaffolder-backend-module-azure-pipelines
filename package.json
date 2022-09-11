@@ -1,0 +1,47 @@
+{
+  "name": "scaffolder-backend-module-azure-pipelines",
+  "version": "0.1.0",
+  "description": "Collection of Backstage scaffolder backend modules for Azure pipelines.",
+  "main": "dist/index.cjs.js",
+  "types": "dist/index.d.ts",
+  "publishConfig": {
+    "access": "public",
+    "main": "dist/index.cjs.js",
+    "types": "dist/index.d.ts"
+  },
+  "backstage": {
+    "role": "backend-plugin-module"
+  },
+  "scripts": {
+    "start": "backstage-cli package start",
+    "build": "backstage-cli package build",
+    "lint": "backstage-cli package lint",
+    "test": "backstage-cli package test",
+    "clean": "backstage-cli package clean",
+    "prepack": "backstage-cli package prepack",
+    "postpack": "backstage-cli package postpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Parfuemerie-Douglas/scaffolder-backend-module-azure-pipelines.git"
+  },
+  "author": "Parfümerie Douglas GmbH",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/Parfuemerie-Douglas/scaffolder-backend-module-azure-pipelines/issues"
+  },
+  "homepage": "https://github.com/Parfuemerie-Douglas/scaffolder-backend-module-azure-pipelines#readme",
+  "dependencies": {
+    "@backstage/plugin-scaffolder-backend": "^1.6.0-next.2",
+    "@backstage/types": "^1.0.0",
+    "@types/node-fetch": "^2.6.2",
+    "node-fetch": "2"
+  },
+  "devDependencies": {
+    "@backstage/backend-common": "^0.15.1-next.2",
+    "@backstage/cli": "^0.19.0-next.2"
+  },
+  "files": [
+    "dist"
+  ]
+}
