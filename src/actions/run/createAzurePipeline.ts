@@ -18,7 +18,7 @@ import { createTemplateAction } from "@backstage/plugin-scaffolder-backend";
 
 import fetch from "node-fetch";
 
-export const createAzurePipelineAction = () => {
+export const createAzurePipelineAction = (azurePersonalAccessToken: string) => {
   return createTemplateAction<{
     organization: string;
     project: string;
@@ -86,7 +86,7 @@ export const createAzurePipelineAction = () => {
             "Content-Type": "application/json",
             Accept: "application/json",
             Authorization: `Basic ${Buffer.from(
-              `PAT:${process.env.AZURE_TOKEN}`
+              `PAT:${azurePersonalAccessToken}`
             ).toString("base64")}`,
             "X-TFS-FedAuthRedirect": "Suppress",
           },
