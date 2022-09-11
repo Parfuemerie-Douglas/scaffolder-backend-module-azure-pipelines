@@ -1,5 +1,5 @@
 {
-  "name": "scaffolder-backend-module-azure-pipelines",
+  "name": "@parfuemerie-douglas/scaffolder-backend-module-azure-pipelines",
   "version": "0.1.0",
   "description": "Collection of Backstage scaffolder backend modules for Azure pipelines.",
   "main": "dist/index.cjs.js",
