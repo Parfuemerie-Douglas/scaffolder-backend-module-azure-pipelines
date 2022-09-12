@@ -1,0 +1,23 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: scaffolder-backend-module-azure-pipelines
+  description: |
+    A collection of Backstage scaffolder backend modules for Azure pipelines.
+  links:
+    - title: Repository
+      url: https://github.com/Parfuemerie-Douglas/scaffolder-backend-module-azure-pipelines
+    - title: npm
+      url: https://www.npmjs.com/package/@parfuemerie-douglas/scaffolder-backend-module-azure-pipelines
+  annotations:
+    github.com/project-slug: Parfuemerie-Douglas/scaffolder-backend-module-azure-pipelines
+  tags:
+    - backstage
+    - azure
+    - pipelines
+    - plugin
+    - template
+spec:
+  type: library
+  owner: parfuemerie-douglas
+  lifecycle: production
