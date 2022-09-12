@@ -15,4 +15,5 @@
  */
 
 export { createAzurePipelineAction } from "./createAzurePipeline";
+export { permitAzurePipelineAction } from "./permitAzurePipeline";
 export { runAzurePipelineAction } from "./runAzurePipeline";
