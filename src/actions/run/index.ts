@@ -15,3 +15,4 @@
  */
 
 export { createAzurePipelineAction } from "./createAzurePipeline";
+export { runAzurePipelineAction } from "./runAzurePipeline";
