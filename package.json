@@ -25,6 +25,11 @@
     "type": "git",
     "url": "git+https://github.com/Parfuemerie-Douglas/scaffolder-backend-module-azure-pipelines.git"
   },
+  "keywords": [
+    "backstage",
+    "azure",
+    "pipelines"
+  ],
   "author": "Parfümerie Douglas GmbH",
   "license": "Apache-2.0",
   "bugs": {
