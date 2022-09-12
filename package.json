@@ -1,6 +1,6 @@
 {
   "name": "@parfuemerie-douglas/scaffolder-backend-module-azure-pipelines",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "A collection of Backstage scaffolder backend modules for Azure pipelines.",
   "main": "dist/index.cjs.js",
   "types": "dist/index.d.ts",
@@ -27,8 +27,10 @@
   },
   "keywords": [
     "backstage",
-    "azure",
-    "pipelines"
+    "azure-devops",
+    "azure-pipelines",
+    "backstage-plugin",
+    "backstage-template"
   ],
   "author": "Parfümerie Douglas GmbH",
   "license": "Apache-2.0",

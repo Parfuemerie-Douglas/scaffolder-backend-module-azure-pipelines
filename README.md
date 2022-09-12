@@ -6,6 +6,7 @@ This plugin contains a collection of actions:
 
 - `azure:pipeline:create`
 - `azure:pipeline:run`
+- `azure:pipeline:permit`
 
 It utilizes Azure DevOps REST APIs to [create](https://docs.microsoft.com/en-us/rest/api/azure/devops/pipelines/pipelines/create?view=azure-devops-rest-6.1) and [run](https://docs.microsoft.com/en-us/rest/api/azure/devops/pipelines/runs/run-pipeline?view=azure-devops-rest-6.1) Azure pipelines.
 
@@ -29,10 +30,15 @@ Configure the actions (you can check the [docs](https://backstage.io/docs/featur
 ```typescript
 // packages/backend/src/plugins/scaffolder.ts
 
-import { createAzurePipelineAction, runAzurePipelineAction } from '@parfuemerie-douglas/scaffolder-backend-module-azure-pipelines';
+import {
+  createAzurePipelineAction,
+  permitAzurePipelineAction,
+  runAzurePipelineAction
+} from '@parfuemerie-douglas/scaffolder-backend-module-azure-pipelines';
 
 const actions = [
   createAzurePipelineAction(<azurePersonalAccessToken>),
+  permitAzurePipelineAction(<azurePersonalAccessToken>),
   runAzurePipelineAction(<azurePersonalAccessToken>),
   ...createBuiltInActions({
     containerRunner,
@@ -54,7 +60,7 @@ return await createRouter({
 });
 ```
 
-The `azure:pipeline:create` and `azure:pipeline:run` actions accepts an [Azure PAT (personal access token)](https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate) parameter which should be a string. The PAT requires `Read & execute` permission for `Build`. Simply replace `<azurePersonalAccessToken>` with your Azure PAT.
+The Azure pipeline actions accepts an [Azure PAT (personal access token)](https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate) parameter which should be a string. The PAT requires `Read & execute` permission for `Build` for the `azure:pipeline:create` and `azure:pipeline:run` actions. For the `azure:pipeline:permit` action the PAT requires `Read, query, & manage` permission for `Service Connections`. Simply replace `<azurePersonalAccessToken>` with your Azure PAT.
 
 ## Using the template
 
@@ -144,6 +150,17 @@ spec:
         pipelineId: ${{ steps.createAzurePipeline.output.pipelineId }}
         project: ${{ (parameters.repoUrl | parseRepoUrl)['owner'] }}
 
+    - id: permitAzurePipeline
+      name: Change Azure Pipeline Permissions
+      action: azure:pipeline:permit
+      input:
+        organization: ${{ (parameters.repoUrl | parseRepoUrl)['organization'] }}
+        project: ${{ (parameters.repoUrl | parseRepoUrl)['owner'] }}
+        resourceId: <serviceEndpointId>
+        resourceType: endpoint
+        authorized: true
+        pipelineId: ${{ steps.createAzurePipeline.output.pipelineId }}
+
     - id: register
       name: Register
       action: catalog:register
@@ -159,5 +176,7 @@ spec:
         icon: catalog
         entityRef: ${{ steps.register.output.entityRef }}
 ```
+
+**_Note_**: The `azure:pipeline:permit` action authorizes/unauthorizes a pipeline for a given resource. To authorize a pipeline for a [service endpoint](https://docs.microsoft.com/en-us/azure/virtual-network/virtual-network-service-endpoints-overview) set `resourceType` to `endpoint`, provide `resourceId` with the service endpoint ID (replace `<serviceEndpointId>` in the example code above), and set authorized to `true`.
 
 You can also visit the `/create/actions` route in your Backstage application to find out more about the parameters these actions accepts when it's installed to configure how you like.
