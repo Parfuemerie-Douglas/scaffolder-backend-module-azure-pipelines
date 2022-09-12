@@ -100,7 +100,9 @@ spec:
             allowedKinds:
               - Group
     - title: Choose a location
-      description: Organization is an Azure DevOps organization. Owner is an Azure DevOps project. Repository is the name of the repository Backstage will create for you.
+      description: >-
+        Organization is an Azure DevOps organization. Owner is an Azure DevOps project.
+        Repository is the name of the repository Backstage will create for you.
       required:
         - repoUrl
       properties:
