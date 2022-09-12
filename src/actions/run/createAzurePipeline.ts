@@ -108,7 +108,7 @@ export const createAzurePipelineAction = (azurePersonalAccessToken: string) => {
         }
       )
         .then((response) => {
-          if (response.status === 200) {
+          if (response.ok) {
             ctx.logger.info(
               `Successfully created ${ctx.input.name} Azure pipeline in ${ctx.input.folder}.`
             );
