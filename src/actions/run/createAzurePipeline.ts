@@ -78,6 +78,8 @@ export const createAzurePipelineAction = (azurePersonalAccessToken: string) => {
         `Creating an Azure pipeline for the repository ${ctx.input.repositoryName} with the ID ${ctx.input.repositoryId}.`
       );
 
+      // See the Azure DevOps documentation for more information about the REST API:
+      // https://docs.microsoft.com/en-us/rest/api/azure/devops/pipelines/pipelines/create?view=azure-devops-rest-6.1
       await fetch(
         `https://dev.azure.com/${ctx.input.organization}/${ctx.input.project}/_apis/pipelines?api-version=6.1-preview.1`,
         {
