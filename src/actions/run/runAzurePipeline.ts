@@ -37,8 +37,8 @@ export const runAzurePipelineAction = (azurePersonalAccessToken: string) => {
           },
           pipelineId: {
             type: "string",
-            title: "pipelineId",
-            description: "The name of the Azure project.",
+            title: "Pipeline ID",
+            description: "The pipeline ID.",
           },
           project: {
             type: "string",
