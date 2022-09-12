@@ -27,7 +27,7 @@ export const createAzurePipelineAction = (azurePersonalAccessToken: string) => {
     repositoryId: string;
     repositoryName: string;
   }>({
-    id: "run:create:azure:pipeline",
+    id: "azure:pipeline:create",
     schema: {
       input: {
         required: [
