@@ -4,7 +4,10 @@ Welcome to the Microsoft Azure pipelines actions for the `scaffolder-backend`.
 
 This plugin contains a collection of actions:
 
-- `run:create:azure:pipeline`
+- `azure:pipeline:create`
+- `azure:pipeline:run`
+
+It utilizes Azure DevOps REST APIs to [create](https://docs.microsoft.com/en-us/rest/api/azure/devops/pipelines/pipelines/create?view=azure-devops-rest-6.1) and [run](https://docs.microsoft.com/en-us/rest/api/azure/devops/pipelines/runs/run-pipeline?view=azure-devops-rest-6.1) Azure pipelines.
 
 ## Getting started
 
@@ -12,7 +15,7 @@ Create your Backstage application using the Backstage CLI as described here: <ht
 
 > Note: If you are using this plugin in a Backstage monorepo that contains the code for `@backstage/plugin-scaffolder-backend`, you need to modify your internal build processes to transpile files from the `node_modules` folder as well.
 
-You need to configure the action in your backend:
+You need to configure the actions in your backend:
 
 ## From your Backstage root directory
 
@@ -21,13 +24,16 @@ You need to configure the action in your backend:
 yarn add --cwd packages/backend @parfuemerie-douglas/scaffolder-backend-module-azure-pipelines
 ```
 
-Configure the action: (you can check the [docs](https://backstage.io/docs/features/software-templates/writing-custom-actions#registering-custom-actions) to see all options):
+Configure the actions (you can check the [docs](https://backstage.io/docs/features/software-templates/writing-custom-actions#registering-custom-actions) to see all options):
 
 ```typescript
 // packages/backend/src/plugins/scaffolder.ts
 
+import { createAzurePipelineAction, runAzurePipelineAction } from '@parfuemerie-douglas/scaffolder-backend-module-azure-pipelines';
+
 const actions = [
-  createAzurePipelineAction("<azurePersonalAccessToken>"),
+  createAzurePipelineAction(<azurePersonalAccessToken>),
+  runAzurePipelineAction(<azurePersonalAccessToken>),
   ...createBuiltInActions({
     containerRunner,
     catalogClient,
@@ -48,11 +54,15 @@ return await createRouter({
 });
 ```
 
-The `run:create:azure:pipeline` action accepts an Azure PAT (personal access token) parameter which should be a string. The PAT requires `Read & execute` permission for `Build`.
+The `azure:pipeline:create` and `azure:pipeline:run` actions accepts an [Azure PAT (personal access token)](https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate) parameter which should be a string. The PAT requires `Read & execute` permission for `Build`. Simply replace `<azurePersonalAccessToken>` with your Azure PAT.
 
-After that you can use the action in your template:
+## Using the template
+
+After loading and configuring the Azure pipeline template actions, you can use the actions in your template:
 
 ```yaml
+# template.yaml
+
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
@@ -118,14 +128,22 @@ spec:
 
     - id: createAzurePipeline
       name: Create Azure Pipeline
-      action: run:create:azure:pipeline
+      action: azure:pipeline:create
       input:
         organization: ${{ (parameters.repoUrl | parseRepoUrl)['organization'] }}
         project: ${{ (parameters.repoUrl | parseRepoUrl)['owner'] }}
-        folder: documentation
+        folder: "my-azure-pipelines-folder"
         name: ${{ parameters.name }}
         repositoryId: ${{ steps.publish.output.repositoryId }}
         repositoryName: ${{ (parameters.repoUrl | parseRepoUrl)['repo'] }}
+
+    - id: runAzurePipeline
+      name: Run Azure Pipeline
+      action: azure:pipeline:run
+      input:
+        organization: ${{ (parameters.repoUrl | parseRepoUrl)['organization'] }}
+        pipelineId: ${{ steps.createAzurePipeline.output.pipelineId }}
+        project: ${{ (parameters.repoUrl | parseRepoUrl)['owner'] }}
 
     - id: register
       name: Register
@@ -143,4 +161,4 @@ spec:
         entityRef: ${{ steps.register.output.entityRef }}
 ```
 
-You can also visit the `/create/actions` route in your Backstage application to find out more about the parameters this action accepts when it's installed to configure how you like.
+You can also visit the `/create/actions` route in your Backstage application to find out more about the parameters these actions accepts when it's installed to configure how you like.
