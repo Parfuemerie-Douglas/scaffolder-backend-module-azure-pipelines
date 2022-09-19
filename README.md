@@ -8,7 +8,7 @@ This plugin contains a collection of actions:
 - `azure:pipeline:run`
 - `azure:pipeline:permit`
 
-It utilizes Azure DevOps REST APIs to [create](https://docs.microsoft.com/en-us/rest/api/azure/devops/pipelines/pipelines/create?view=azure-devops-rest-6.1) and [run](https://docs.microsoft.com/en-us/rest/api/azure/devops/pipelines/runs/run-pipeline?view=azure-devops-rest-6.1) Azure pipelines.
+It utilizes Azure DevOps REST APIs to [create](https://docs.microsoft.com/en-us/rest/api/azure/devops/pipelines/pipelines/create?view=azure-devops-rest-6.1), [run](https://docs.microsoft.com/en-us/rest/api/azure/devops/pipelines/runs/run-pipeline?view=azure-devops-rest-6.1), and [authorize](https://docs.microsoft.com/en-us/rest/api/azure/devops/approvalsandchecks/pipeline-permissions/update-pipeline-permisions-for-resource?view=azure-devops-rest-7.1) Azure pipelines.
 
 ## Getting started
 
@@ -33,13 +33,13 @@ Configure the actions (you can check the [docs](https://backstage.io/docs/featur
 import {
   createAzurePipelineAction,
   permitAzurePipelineAction,
-  runAzurePipelineAction
-} from '@parfuemerie-douglas/scaffolder-backend-module-azure-pipelines';
+  runAzurePipelineAction,
+} from "@parfuemerie-douglas/scaffolder-backend-module-azure-pipelines";
 
 const actions = [
-  createAzurePipelineAction(<azurePersonalAccessToken>),
-  permitAzurePipelineAction(<azurePersonalAccessToken>),
-  runAzurePipelineAction(<azurePersonalAccessToken>),
+  createAzurePipelineAction({ integrations }),
+  permitAzurePipelineAction({ integrations }),
+  runAzurePipelineAction({ integrations }),
   ...createBuiltInActions({
     containerRunner,
     catalogClient,
@@ -60,7 +60,18 @@ return await createRouter({
 });
 ```
 
-The Azure pipeline actions accepts an [Azure PAT (personal access token)](https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate) parameter which should be a string. The PAT requires `Read & execute` permission for `Build` for the `azure:pipeline:create` and `azure:pipeline:run` actions. For the `azure:pipeline:permit` action the PAT requires `Read, query, & manage` permission for `Service Connections`. Simply replace `<azurePersonalAccessToken>` with your Azure PAT.
+The Azure pipeline actions uses an [Azure PAT (personal access token)](https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate) for authorization. The PAT requires `Read & execute` permission for `Build` for the `azure:pipeline:create` and `azure:pipeline:run` actions. For the `azure:pipeline:permit` action the PAT requires `Read, query, & manage` permission for `Service Connections`. Simply add the PAT to your `app-config.yaml`:
+
+```yaml
+# app-config.yaml
+
+integrations:
+  azure:
+    - host: dev.azure.com
+      token: ${AZURE_TOKEN}
+```
+
+Read more on integrations in Backstage in the [Integrations documentation](https://backstage.io/docs/integrations/).
 
 ## Using the template
 
