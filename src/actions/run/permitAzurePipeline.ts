@@ -14,11 +14,17 @@
  * limitations under the License.
  */
 
+import { InputError } from "@backstage/errors";
+import { ScmIntegrationRegistry } from "@backstage/integration";
 import { createTemplateAction } from "@backstage/plugin-scaffolder-backend";
 
 import fetch from "node-fetch";
 
-export const permitAzurePipelineAction = (azurePersonalAccessToken: string) => {
+export const permitAzurePipelineAction = (options: {
+  integrations: ScmIntegrationRegistry;
+}) => {
+  const { integrations } = options;
+
   return createTemplateAction<{
     organization: string;
     project: string;
@@ -26,6 +32,7 @@ export const permitAzurePipelineAction = (azurePersonalAccessToken: string) => {
     resourceType: string;
     authorized: boolean;
     pipelineId: string;
+    token?: string;
   }>({
     id: "azure:pipeline:permit",
     schema: {
@@ -70,39 +77,68 @@ export const permitAzurePipelineAction = (azurePersonalAccessToken: string) => {
             title: "Pipeline ID",
             description: "The pipeline ID.",
           },
+          token: {
+            title: "Authenticatino Token",
+            type: "string",
+            description: "The token to use for authorization.",
+          },
         },
       },
     },
     async handler(ctx) {
+      const {
+        organization,
+        project,
+        resourceId,
+        resourceType,
+        authorized,
+        pipelineId,
+      } = ctx.input;
+
+      const host = "dev.azure.com";
+      const integrationConfig = integrations.azure.byHost(host);
+
+      if (!integrationConfig) {
+        throw new InputError(
+          `No matching integration configuration for host ${host}, please check your integrations config`
+        );
+      }
+
+      if (!integrationConfig.config.token && !ctx.input.token) {
+        throw new InputError(`No token provided for Azure Integration ${host}`);
+      }
+
+      const token = ctx.input.token ?? integrationConfig.config.token!;
+
       if (ctx.input.authorized == true) {
         ctx.logger.info(
-          `Authorizing Azure pipeline with ID ${ctx.input.pipelineId} for ${ctx.input.resourceType} with ID ${ctx.input.resourceId}.`
+          `Authorizing Azure pipeline with ID ${pipelineId} for ${resourceType} with ID ${resourceId}.`
         );
       } else {
         ctx.logger.info(
-          `Unauthorizing Azure pipeline with ID ${ctx.input.pipelineId} for ${ctx.input.resourceType} with ID ${ctx.input.resourceId}.`
+          `Unauthorizing Azure pipeline with ID ${pipelineId} for ${resourceType} with ID ${resourceId}.`
         );
       }
 
       // See the Azure DevOps documentation for more information about the REST API:
       // https://docs.microsoft.com/en-us/rest/api/azure/devops/approvalsandchecks/pipeline-permissions/update-pipeline-permisions-for-resource?view=azure-devops-rest-7.1
       await fetch(
-        `https://dev.azure.com/${ctx.input.organization}/${ctx.input.project}/_apis/pipelines/pipelinepermissions/${ctx.input.resourceType}/${ctx.input.resourceId}?api-version=7.1-preview.1`,
+        `https://dev.azure.com/${organization}/${project}/_apis/pipelines/pipelinepermissions/${resourceType}/${resourceId}?api-version=7.1-preview.1`,
         {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
-            Authorization: `Basic ${Buffer.from(
-              `PAT:${azurePersonalAccessToken}`
-            ).toString("base64")}`,
+            Authorization: `Basic ${Buffer.from(`PAT:${token}`).toString(
+              "base64"
+            )}`,
             "X-TFS-FedAuthRedirect": "Suppress",
           },
           body: JSON.stringify({
             pipelines: [
               {
-                authorized: ctx.input.authorized,
-                id: parseInt(ctx.input.pipelineId),
+                authorized: authorized,
+                id: parseInt(pipelineId),
               },
             ],
           }),
