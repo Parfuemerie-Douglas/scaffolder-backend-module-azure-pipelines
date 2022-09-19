@@ -14,15 +14,22 @@
  * limitations under the License.
  */
 
+import { InputError } from "@backstage/errors";
+import { ScmIntegrationRegistry } from "@backstage/integration";
 import { createTemplateAction } from "@backstage/plugin-scaffolder-backend";
 
 import fetch from "node-fetch";
 
-export const runAzurePipelineAction = (azurePersonalAccessToken: string) => {
+export const runAzurePipelineAction = (options: {
+  integrations: ScmIntegrationRegistry;
+}) => {
+  const { integrations } = options;
+
   return createTemplateAction<{
     organization: string;
     pipelineId: string;
     project: string;
+    token?: string;
   }>({
     id: "azure:pipeline:run",
     schema: {
@@ -45,26 +52,46 @@ export const runAzurePipelineAction = (azurePersonalAccessToken: string) => {
             title: "Project",
             description: "The name of the Azure project.",
           },
+          token: {
+            title: "Authenticatino Token",
+            type: "string",
+            description: "The token to use for authorization.",
+          },
         },
       },
     },
     async handler(ctx) {
-      ctx.logger.info(
-        `Running Azure pipeline with the ID ${ctx.input.pipelineId}.`
-      );
+      const { organization, pipelineId, project } = ctx.input;
+
+      const host = "dev.azure.com";
+      const integrationConfig = integrations.azure.byHost(host);
+
+      if (!integrationConfig) {
+        throw new InputError(
+          `No matching integration configuration for host ${host}, please check your integrations config`
+        );
+      }
+
+      if (!integrationConfig.config.token && !ctx.input.token) {
+        throw new InputError(`No token provided for Azure Integration ${host}`);
+      }
+
+      const token = ctx.input.token ?? integrationConfig.config.token!;
+
+      ctx.logger.info(`Running Azure pipeline with the ID ${pipelineId}.`);
 
       // See the Azure DevOps documentation for more information about the REST API:
       // https://docs.microsoft.com/en-us/rest/api/azure/devops/pipelines/runs/run-pipeline?view=azure-devops-rest-6.1
       await fetch(
-        `https://dev.azure.com/${ctx.input.organization}/${ctx.input.project}/_apis/pipelines/${ctx.input.pipelineId}/runs?api-version=6.1-preview.1`,
+        `https://dev.azure.com/${organization}/${project}/_apis/pipelines/${pipelineId}/runs?api-version=6.1-preview.1`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
-            Authorization: `Basic ${Buffer.from(
-              `PAT:${azurePersonalAccessToken}`
-            ).toString("base64")}`,
+            Authorization: `Basic ${Buffer.from(`PAT:${token}`).toString(
+              "base64"
+            )}`,
             "X-TFS-FedAuthRedirect": "Suppress",
           },
           body: JSON.stringify({

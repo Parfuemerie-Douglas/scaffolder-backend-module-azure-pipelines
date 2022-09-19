@@ -14,11 +14,17 @@
  * limitations under the License.
  */
 
+import { InputError } from "@backstage/errors";
+import { ScmIntegrationRegistry } from "@backstage/integration";
 import { createTemplateAction } from "@backstage/plugin-scaffolder-backend";
 
 import fetch from "node-fetch";
 
-export const createAzurePipelineAction = (azurePersonalAccessToken: string) => {
+export const createAzurePipelineAction = (options: {
+  integrations: ScmIntegrationRegistry;
+}) => {
+  const { integrations } = options;
+
   return createTemplateAction<{
     organization: string;
     project: string;
@@ -26,6 +32,7 @@ export const createAzurePipelineAction = (azurePersonalAccessToken: string) => {
     name: string;
     repositoryId: string;
     repositoryName: string;
+    token?: string;
   }>({
     id: "azure:pipeline:create",
     schema: {
@@ -70,37 +77,66 @@ export const createAzurePipelineAction = (azurePersonalAccessToken: string) => {
             title: "Repository Name",
             description: "The name of the repository.",
           },
+          token: {
+            title: "Authenticatino Token",
+            type: "string",
+            description: "The token to use for authorization.",
+          },
         },
       },
     },
     async handler(ctx) {
+      const {
+        organization,
+        project,
+        folder,
+        name,
+        repositoryId,
+        repositoryName,
+      } = ctx.input;
+
+      const host = "dev.azure.com";
+      const integrationConfig = integrations.azure.byHost(host);
+
+      if (!integrationConfig) {
+        throw new InputError(
+          `No matching integration configuration for host ${host}, please check your integrations config`
+        );
+      }
+
+      if (!integrationConfig.config.token && !ctx.input.token) {
+        throw new InputError(`No token provided for Azure Integration ${host}`);
+      }
+
+      const token = ctx.input.token ?? integrationConfig.config.token!;
+
       ctx.logger.info(
-        `Creating an Azure pipeline for the repository ${ctx.input.repositoryName} with the ID ${ctx.input.repositoryId}.`
+        `Creating an Azure pipeline for the repository ${repositoryName} with the ID ${repositoryId}.`
       );
 
       // See the Azure DevOps documentation for more information about the REST API:
       // https://docs.microsoft.com/en-us/rest/api/azure/devops/pipelines/pipelines/create?view=azure-devops-rest-6.1
       await fetch(
-        `https://dev.azure.com/${ctx.input.organization}/${ctx.input.project}/_apis/pipelines?api-version=6.1-preview.1`,
+        `https://dev.azure.com/${organization}/${project}/_apis/pipelines?api-version=6.1-preview.1`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
-            Authorization: `Basic ${Buffer.from(
-              `PAT:${azurePersonalAccessToken}`
-            ).toString("base64")}`,
+            Authorization: `Basic ${Buffer.from(`PAT:${token}`).toString(
+              "base64"
+            )}`,
             "X-TFS-FedAuthRedirect": "Suppress",
           },
           body: JSON.stringify({
-            folder: ctx.input.folder,
-            name: ctx.input.name,
+            folder: folder,
+            name: name,
             configuration: {
               type: "yaml",
               path: "/azure-pipelines.yaml",
               repository: {
-                id: ctx.input.repositoryId,
-                name: ctx.input.repositoryName,
+                id: repositoryId,
+                name: repositoryName,
                 type: "azureReposGit",
               },
             },
@@ -110,7 +146,7 @@ export const createAzurePipelineAction = (azurePersonalAccessToken: string) => {
         .then((response) => {
           if (response.ok) {
             ctx.logger.info(
-              `Successfully created ${ctx.input.name} Azure pipeline in ${ctx.input.folder}.`
+              `Successfully created ${name} Azure pipeline in ${folder}.`
             );
           } else {
             ctx.logger.error(
@@ -124,6 +160,7 @@ export const createAzurePipelineAction = (azurePersonalAccessToken: string) => {
           ctx.logger.info(`The Azure pipeline ID is ${data.id}.`);
 
           ctx.output("pipelineId", data.id.toString());
+          ctx.output("pipelineUrl", data._links.web.href);
         });
     },
   });
