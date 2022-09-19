@@ -160,6 +160,7 @@ export const createAzurePipelineAction = (options: {
           ctx.logger.info(`The Azure pipeline ID is ${data.id}.`);
 
           ctx.output("pipelineId", data.id.toString());
+          ctx.output("pipelineUrl", data._links.web.href);
         });
     },
   });
