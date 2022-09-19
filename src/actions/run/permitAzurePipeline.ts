@@ -60,6 +60,11 @@ export const permitAzurePipelineAction = (azurePersonalAccessToken: string) => {
             title: "Resource Type",
             description: "The type of the resource (e.g. endpoint).",
           },
+          authorized: {
+            type: "boolean",
+            title: "Authorized",
+            description: "A true or false authorization indicator.",
+          },
           pipelineId: {
             type: "string",
             title: "Pipeline ID",
