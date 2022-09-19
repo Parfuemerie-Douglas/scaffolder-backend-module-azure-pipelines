@@ -1,6 +1,6 @@
 # scaffolder-backend-module-azure-pipelines
 
-Welcome to the Microsoft Azure pipelines actions for the `scaffolder-backend`.
+Welcome to the Microsoft Azure pipeline actions for the `scaffolder-backend`.
 
 This plugin contains a collection of actions:
 
@@ -60,7 +60,7 @@ return await createRouter({
 });
 ```
 
-The Azure pipeline actions uses an [Azure PAT (personal access token)](https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate) for authorization. The PAT requires `Read & execute` permission for `Build` for the `azure:pipeline:create` and `azure:pipeline:run` actions. For the `azure:pipeline:permit` action the PAT requires `Read, query, & manage` permission for `Service Connections`. Simply add the PAT to your `app-config.yaml`:
+The Azure pipeline actions use an [Azure PAT (personal access token)](https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate) for authorization. The PAT requires `Read & execute` permission for `Build` for the `azure:pipeline:create` and `azure:pipeline:run` actions. For the `azure:pipeline:permit` action the PAT requires `Read, query, & manage` permission for `Service Connections`. Simply add the PAT to your `app-config.yaml`:
 
 ```yaml
 # app-config.yaml
@@ -185,6 +185,8 @@ spec:
     links:
       - title: Repository
         url: ${{ steps.publish.output.remoteUrl }}
+      - title: Pipeline
+        url: ${{ steps.createAzurePipeline.output.pipelineUrl }}
       - title: Open in catalog
         icon: catalog
         entityRef: ${{ steps.register.output.entityRef }}
@@ -192,4 +194,4 @@ spec:
 
 **_Note_**: The `azure:pipeline:permit` action authorizes/unauthorizes a pipeline for a given resource. To authorize a pipeline for a [service endpoint](https://docs.microsoft.com/en-us/azure/virtual-network/virtual-network-service-endpoints-overview) set `resourceType` to `endpoint`, provide `resourceId` with the service endpoint ID (replace `<serviceEndpointId>` in the example code above), and set authorized to `true`.
 
-You can also visit the `/create/actions` route in your Backstage application to find out more about the parameters these actions accepts when it's installed to configure how you like.
+You can find a list of all registred actions including their parameters at the `/create/actions` route in your Backstage application.
