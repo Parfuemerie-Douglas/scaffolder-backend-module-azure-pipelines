@@ -4,7 +4,7 @@ name: Publish Package to npmjs
 on:
   # Triggers the workflow when publishing a new release
   release:
-    type: [ published ]
+    type: [published]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -24,11 +24,11 @@ jobs:
       # Setup .npmrc file to publish to npm
       - uses: actions/setup-node@v3
         with:
-          node-version: '16.x'
-          registry-url: 'https://registry.npmjs.org/'
+          node-version: "16.x"
+          registry-url: "https://registry.npmjs.org/"
 
-      - run: npm ci
-      
+      - run: yarn install --immutable --immutable-cache --check-cache
+
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
