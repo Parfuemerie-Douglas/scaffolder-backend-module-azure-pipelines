@@ -110,7 +110,7 @@ export const permitAzurePipelineAction = (options: {
 
       const token = ctx.input.token ?? integrationConfig.config.token!;
 
-      if (ctx.input.authorized == true) {
+      if (ctx.input.authorized === true) {
         ctx.logger.info(
           `Authorizing Azure pipeline with ID ${pipelineId} for ${resourceType} with ID ${resourceId}.`
         );
