@@ -143,7 +143,7 @@ export const permitAzurePipelineAction = (options: {
             ],
           }),
         }
-      ).then(function (response) {
+      ).then((response) => {
         if (response.ok) {
           ctx.logger.info(
             `Successfully changed the Azure pipeline permissions.`

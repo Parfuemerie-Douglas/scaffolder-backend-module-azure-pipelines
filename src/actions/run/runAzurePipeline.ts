@@ -104,7 +104,7 @@ export const runAzurePipelineAction = (options: {
             },
           }),
         }
-      ).then(function (response) {
+      ).then((response) => {
         if (response.ok) {
           ctx.logger.info(`Successfully ran Azure pipeline.`);
         } else {
