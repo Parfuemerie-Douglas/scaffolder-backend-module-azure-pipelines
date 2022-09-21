@@ -138,7 +138,7 @@ export const permitAzurePipelineAction = (options: {
             pipelines: [
               {
                 authorized: authorized,
-                id: parseInt(pipelineId),
+                id: parseInt(pipelineId, 10),
               },
             ],
           }),
