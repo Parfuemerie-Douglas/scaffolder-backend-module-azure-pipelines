@@ -8,13 +8,22 @@ This plugin contains a collection of actions:
 - `azure:pipeline:run`
 - `azure:pipeline:permit`
 
-It utilizes Azure DevOps REST APIs to [create](https://docs.microsoft.com/en-us/rest/api/azure/devops/pipelines/pipelines/create?view=azure-devops-rest-6.1), [run](https://docs.microsoft.com/en-us/rest/api/azure/devops/pipelines/runs/run-pipeline?view=azure-devops-rest-6.1), and [authorize](https://docs.microsoft.com/en-us/rest/api/azure/devops/approvalsandchecks/pipeline-permissions/update-pipeline-permisions-for-resource?view=azure-devops-rest-7.1) Azure pipelines.
+It utilizes Azure DevOps REST APIs to
+[create](https://docs.microsoft.com/en-us/rest/api/azure/devops/pipelines/pipelines/create?view=azure-devops-rest-6.1),
+[run](https://docs.microsoft.com/en-us/rest/api/azure/devops/pipelines/runs/run-pipeline?view=azure-devops-rest-6.1),
+and
+[authorize](https://docs.microsoft.com/en-us/rest/api/azure/devops/approvalsandchecks/pipeline-permissions/update-pipeline-permisions-for-resource?view=azure-devops-rest-7.1)
+Azure pipelines.
 
 ## Getting started
 
-Create your Backstage application using the Backstage CLI as described here: <https://backstage.io/docs/getting-started/create-an-app>.
+Create your Backstage application using the Backstage CLI as described here:
+<https://backstage.io/docs/getting-started/create-an-app>.
 
-> Note: If you are using this plugin in a Backstage monorepo that contains the code for `@backstage/plugin-scaffolder-backend`, you need to modify your internal build processes to transpile files from the `node_modules` folder as well.
+> Note: If you are using this plugin in a Backstage monorepo that contains the
+> code for `@backstage/plugin-scaffolder-backend`, you need to modify your
+> internal build processes to transpile files from the `node_modules` folder as
+> well.
 
 You need to configure the actions in your backend:
 
@@ -25,7 +34,9 @@ You need to configure the actions in your backend:
 yarn add --cwd packages/backend @parfuemerie-douglas/scaffolder-backend-module-azure-pipelines
 ```
 
-Configure the actions (you can check the [docs](https://backstage.io/docs/features/software-templates/writing-custom-actions#registering-custom-actions) to see all options):
+Configure the actions (you can check the
+[docs](https://backstage.io/docs/features/software-templates/writing-custom-actions#registering-custom-actions)
+to see all options):
 
 ```typescript
 // packages/backend/src/plugins/scaffolder.ts
@@ -60,7 +71,13 @@ return await createRouter({
 });
 ```
 
-The Azure pipeline actions use an [Azure PAT (personal access token)](https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate) for authorization. The PAT requires `Read & execute` permission for `Build` for the `azure:pipeline:create` and `azure:pipeline:run` actions. For the `azure:pipeline:permit` action the PAT requires `Read, query, & manage` permission for `Service Connections`. Simply add the PAT to your `app-config.yaml`:
+The Azure pipeline actions use an [Azure PAT (personal access
+token)](https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate)
+for authorization. The PAT requires `Read & execute` permission for `Build` for
+the `azure:pipeline:create` and `azure:pipeline:run` actions. For the
+`azure:pipeline:permit` action the PAT requires `Read, query, & manage`
+permission for `Service Connections`. Simply add the PAT to your
+`app-config.yaml`:
 
 ```yaml
 # app-config.yaml
@@ -71,11 +88,13 @@ integrations:
       token: ${AZURE_TOKEN}
 ```
 
-Read more on integrations in Backstage in the [Integrations documentation](https://backstage.io/docs/integrations/).
+Read more on integrations in Backstage in the [Integrations
+documentation](https://backstage.io/docs/integrations/).
 
 ## Using the template
 
-After loading and configuring the Azure pipeline template actions, you can use the actions in your template:
+After loading and configuring the Azure pipeline template actions, you can use
+the actions in your template:
 
 ```yaml
 # template.yaml
@@ -192,6 +211,12 @@ spec:
         entityRef: ${{ steps.register.output.entityRef }}
 ```
 
-**_Note_**: The `azure:pipeline:permit` action authorizes/unauthorizes a pipeline for a given resource. To authorize a pipeline for a [service endpoint](https://docs.microsoft.com/en-us/azure/virtual-network/virtual-network-service-endpoints-overview) set `resourceType` to `endpoint`, provide `resourceId` with the service endpoint ID (replace `<serviceEndpointId>` in the example code above), and set authorized to `true`.
+**_Note_**: The `azure:pipeline:permit` action authorizes/unauthorizes a
+pipeline for a given resource. To authorize a pipeline for a [service
+endpoint](https://docs.microsoft.com/en-us/azure/virtual-network/virtual-network-service-endpoints-overview)
+set `resourceType` to `endpoint`, provide `resourceId` with the service endpoint
+ID (replace `<serviceEndpointId>` in the example code above), and set authorized
+to `true`.
 
-You can find a list of all registred actions including their parameters at the `/create/actions` route in your Backstage application.
+You can find a list of all registred actions including their parameters at the
+`/create/actions` route in your Backstage application.
