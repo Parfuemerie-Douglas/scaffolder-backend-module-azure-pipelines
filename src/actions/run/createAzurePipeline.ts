@@ -32,6 +32,7 @@ export const createAzurePipelineAction = (options: {
     name: string;
     repositoryId: string;
     repositoryName: string;
+    yamlPath?: string;
     token?: string;
   }>({
     id: "azure:pipeline:create",
@@ -77,6 +78,11 @@ export const createAzurePipelineAction = (options: {
             title: "Repository Name",
             description: "The name of the repository.",
           },
+          yamlPath: {
+            type: "string",
+            title: "Azure DevOps Pipelines Definition",
+            description: "The location of the Azure DevOps Pipeline definition file. Defaults to /azure-pipelines.yaml",
+          },
           token: {
             title: "Authenticatino Token",
             type: "string",
@@ -92,6 +98,7 @@ export const createAzurePipelineAction = (options: {
         folder,
         name,
         repositoryId,
+        yamlPath,
         repositoryName,
       } = ctx.input;
 
@@ -133,7 +140,7 @@ export const createAzurePipelineAction = (options: {
             name: name,
             configuration: {
               type: "yaml",
-              path: "/azure-pipelines.yaml",
+              path: yamlPath || "/azure-pipelines.yaml",
               repository: {
                 id: repositoryId,
                 name: repositoryName,
