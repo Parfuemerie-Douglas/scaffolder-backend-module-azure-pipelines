@@ -59,7 +59,7 @@ export const runAzurePipelineAction = (options: {
             description: "The branch of the pipeline's repository.",
           },
           token: {
-            title: "Authenticatino Token",
+            title: "Authentication Token",
             type: "string",
             description: "The token to use for authorization.",
           },
