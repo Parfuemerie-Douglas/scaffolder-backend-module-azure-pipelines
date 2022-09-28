@@ -29,6 +29,7 @@ export const runAzurePipelineAction = (options: {
     organization: string;
     pipelineId: string;
     project: string;
+    branch?: string;
     token?: string;
   }>({
     id: "azure:pipeline:run",
@@ -52,8 +53,13 @@ export const runAzurePipelineAction = (options: {
             title: "Project",
             description: "The name of the Azure project.",
           },
+          branch: {
+            title: "Repository Branch",
+            type: "string",
+            description: "The branch of the pipeline's repository.",
+          },
           token: {
-            title: "Authenticatino Token",
+            title: "Authentication Token",
             type: "string",
             description: "The token to use for authorization.",
           },
@@ -61,7 +67,7 @@ export const runAzurePipelineAction = (options: {
       },
     },
     async handler(ctx) {
-      const { organization, pipelineId, project } = ctx.input;
+      const { organization, pipelineId, project, branch } = ctx.input;
 
       const host = "dev.azure.com";
       const integrationConfig = integrations.azure.byHost(host);
@@ -98,7 +104,7 @@ export const runAzurePipelineAction = (options: {
             resources: {
               repositories: {
                 self: {
-                  refName: "refs/heads/master",
+                  refName: `refs/heads/${branch ?? "main"}`,
                 },
               },
             },
