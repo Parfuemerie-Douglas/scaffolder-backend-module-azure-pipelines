@@ -173,6 +173,7 @@ spec:
         name: ${{ parameters.name }}
         repositoryId: ${{ steps.publish.output.repositoryId }}
         repositoryName: ${{ (parameters.repoUrl | parseRepoUrl)['repo'] }}
+        yamlPath: <optional value to your azure pipelines yaml file, defaults to ./azure-pipelines.yaml>
 
     - id: runAzurePipeline
       name: Run Azure Pipeline
