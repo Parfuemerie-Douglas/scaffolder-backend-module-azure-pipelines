@@ -31,6 +31,7 @@ export const runAzurePipelineAction = (options: {
     project: string;
     branch?: string;
     token?: string;
+    values?: object;
   }>({
     id: "azure:pipeline:run",
     schema: {
@@ -63,11 +64,16 @@ export const runAzurePipelineAction = (options: {
             type: "string",
             description: "The token to use for authorization.",
           },
+          values: {
+            title: "Values",
+            type: "object",
+            description: "The values you need as parameters on the request to azure.",
+          },
         },
       },
     },
     async handler(ctx) {
-      const { organization, pipelineId, project, branch } = ctx.input;
+      const { organization, pipelineId, project, branch, values } = ctx.input;
 
       const host = "dev.azure.com";
       const integrationConfig = integrations.azure.byHost(host);
@@ -86,6 +92,20 @@ export const runAzurePipelineAction = (options: {
 
       ctx.logger.info(`Running Azure pipeline with the ID ${pipelineId}.`);
 
+      let body: string;
+      if (values) {
+        body = JSON.stringify(values);
+      } else {
+        body = JSON.stringify({
+          resources: {
+            repositories: {
+              self: {
+                refName: `refs/heads/${branch ?? "main"}`,
+              },
+            },
+          },
+        });
+      }
       // See the Azure DevOps documentation for more information about the REST API:
       // https://docs.microsoft.com/en-us/rest/api/azure/devops/pipelines/runs/run-pipeline?view=azure-devops-rest-6.1
       await fetch(
@@ -100,15 +120,7 @@ export const runAzurePipelineAction = (options: {
             )}`,
             "X-TFS-FedAuthRedirect": "Suppress",
           },
-          body: JSON.stringify({
-            resources: {
-              repositories: {
-                self: {
-                  refName: `refs/heads/${branch ?? "main"}`,
-                },
-              },
-            },
-          }),
+          body,
         }
       ).then((response) => {
         if (response.ok) {
