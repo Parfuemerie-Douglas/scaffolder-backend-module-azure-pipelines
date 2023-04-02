@@ -25,6 +25,32 @@ export const runAzurePipelineAction = (options: {
 }) => {
   const { integrations } = options;
 
+  async function checkPipelineStatus(organization: string, project: string, runId: number, token: string): Promise<boolean> {
+    const response = await fetch(
+      `https://dev.azure.com/${organization}/${project}/_apis/build/builds/${runId}?api-version=6.1-preview.6`,
+      {
+        headers: {
+          Authorization: `Basic ${Buffer.from(`PAT:${token}`).toString("base64")}`,
+          "X-TFS-FedAuthRedirect": "Suppress",
+        },
+      }
+    );
+    if (!response.ok) {
+      throw new Error(`Failed to retrieve pipeline run status. Status code ${response.status}.`);
+    }
+    const json = await response.json();
+    const status = json.status;
+    if (status === "completed") {
+      return json.result === "succeeded";
+    } else if (status === "inProgress" || status === "notStarted") {
+      // If the pipeline is still running, wait 10 seconds and check again.
+      await new Promise((resolve) => setTimeout(resolve, 10000));
+      return checkPipelineStatus(organization, project, runId, token);
+    } else {
+      throw new Error(`Azure pipeline failed with status: ${status}.`);
+    }
+  }
+
   return createTemplateAction<{
     organization: string;
     pipelineId: string;
@@ -124,13 +150,30 @@ export const runAzurePipelineAction = (options: {
         }
       ).then((response) => {
         if (response.ok) {
-          ctx.logger.info(`Successfully ran Azure pipeline.`);
+          return response.json();
         } else {
-          ctx.logger.error(
-            `Failed to run Azure pipeline. Status code ${response.status}.`
-          );
+          throw new Error(`Failed to run Azure pipeline. Status code ${response.status}.`);
         }
-      });
+      }).then((json) => {
+        const pipelineUrl = json._links.web.href;
+        ctx.logger.info(`Successfully started Azure pipeline run: ${pipelineUrl}`);
+
+        const pipelineRunId = json.id;
+
+        // Poll the pipeline status until it completes.
+        return checkPipelineStatus(organization, project, pipelineRunId, token);
+      })
+        .then((success) => {
+          if (success) {
+            ctx.logger.info(`Azure pipeline completed successfully.`);
+          } else {
+            ctx.logger.error(`Azure pipeline failed.`);
+          }
+        })
+        .catch((error) => {
+          // Handle any errors that occurred during the pipeline run or status check.
+          ctx.logger.error(error.message);
+        });
     },
   });
 };
