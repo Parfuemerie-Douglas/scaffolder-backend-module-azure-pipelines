@@ -154,19 +154,9 @@ spec:
               type: string
             id:
               type: number
-    - title: Choose Pipeline Variables
-      description: Please select some pipeline variables
-      properties:
-        pipelineParameters:
-          title: Pipeline Variables
-          type: object
-          properties:
-            name:
+            foo:
               type: string
-            id:
-              type: number
-
-***note these properties for parameters and variables are just examples, you can use whatever key values that your pipeline will accept@!"
+***note these properties for parameters are just examples, you can use whatever key values that your pipeline will accept! (note if the pipeline doesnt have these parameters configured it will return a 400 error"
 
   steps:
     - id: fetch
