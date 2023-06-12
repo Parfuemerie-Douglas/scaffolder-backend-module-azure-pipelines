@@ -90,7 +90,7 @@ export const createAzurePipelineAction = (options: {
             description: "The location of the Azure DevOps Pipeline definition file. Defaults to /azure-pipelines.yaml",
           },
           token: {
-            title: "Authenticatino Token",
+            title: "Authentication Token",
             type: "string",
             description: "The token to use for authorization.",
           },
@@ -131,7 +131,7 @@ export const createAzurePipelineAction = (options: {
       // See the Azure DevOps documentation for more information about the REST API:
       // https://docs.microsoft.com/en-us/rest/api/azure/devops/pipelines/pipelines/create?view=azure-devops-rest-6.1
       await fetch(
-        `https://dev.azure.com/${organization}/${project}/_apis/pipelines?api-version=6.1-preview.1`,
+        `https://${host}/${organization}/${project}/_apis/pipelines?api-version=6.1-preview.1`,
         {
           method: "POST",
           headers: {
