@@ -52,6 +52,7 @@ export const runAzurePipelineAction = (options: {
   }
 
   return createTemplateAction<{
+    server: string;
     organization: string;
     pipelineId: string;
     project: string;
@@ -62,9 +63,18 @@ export const runAzurePipelineAction = (options: {
     id: "azure:pipeline:run",
     schema: {
       input: {
-        required: ["organization", "pipelineId", "project"],
+        required: [
+          "organization",
+          "pipelineId",
+          "project"
+        ],
         type: "object",
         properties: {
+          server: {
+            type: "string",
+            title: "Server hostname",
+            description: "The hostname of the Azure DevOps service. Defaults to dev.azure.com",
+          },
           organization: {
             type: "string",
             title: "Organization",
@@ -99,9 +109,16 @@ export const runAzurePipelineAction = (options: {
       },
     },
     async handler(ctx) {
-      const { organization, pipelineId, project, branch, values } = ctx.input;
+      const {
+        server,
+        organization,
+        pipelineId,
+        project,
+        branch,
+        values
+      } = ctx.input;
 
-      const host = "dev.azure.com";
+      const host = server ?? "dev.azure.com";
       const integrationConfig = integrations.azure.byHost(host);
 
       if (!integrationConfig) {
