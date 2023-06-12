@@ -34,9 +34,7 @@ interface RunPipelineRequest {
   templateParameters?: {
     [key: string]: string;
   };
-  variables?: {
-    [key: string]: string;
-  };
+  variables?: string;
   yamlOverrides?: string;
 }
 
@@ -161,6 +159,8 @@ export const runAzurePipelineAction = (options: {
       const token = ctx.input.token ?? integrationConfig.config.token!;
 
       ctx.logger.info(`Running Azure pipeline with the ID ${pipelineId}.`);
+      
+      const variablesString = JSON.stringify(pipelineVariables)
 
       const request: RunPipelineRequest = {
         resources: {
@@ -171,16 +171,19 @@ export const runAzurePipelineAction = (options: {
           },
         },
         templateParameters: pipelineParameters as Record<string, string>,
-        variables: pipelineVariables as Record<string, string>,
         yamlOverrides: "",
       };
+
+      if (variablesString !== null) {
+        request.variables = variablesString;
+      }
 
       const body = JSON.stringify(request);
 
       // See the Azure DevOps documentation for more information about the REST API:
-      // https://docs.microsoft.com/en-us/rest/api/azure/devops/pipelines/runs/run-pipeline?view=azure-devops-rest-6.1
+      // https://docs.microsoft.com/en-us/rest/api/azure/devops/pipelines/runs/run-pipeline?view=azure-devops-rest-7.0
       await fetch(
-        `https://${host}/${organization}/${project}/_apis/pipelines/${pipelineId}/runs?api-version=6.1-preview.1`,
+        `https://${host}/${organization}/${project}/_apis/pipelines/${pipelineId}/runs?api-version=7.0`,
         {
           method: "POST",
           headers: {

@@ -143,6 +143,30 @@ spec:
           ui:options:
             allowedHosts:
               - dev.azure.com
+    - title: Choose Pipeline Parameters
+      description: Please select some pipeline parameters
+      properties:
+        pipelineParameters:
+          title: Pipeline Parameters
+          type: object
+          properties:
+            name:
+              type: string
+            id:
+              type: number
+    - title: Choose Pipeline Variables
+      description: Please select some pipeline variables
+      properties:
+        pipelineParameters:
+          title: Pipeline Variables
+          type: object
+          properties:
+            name:
+              type: string
+            id:
+              type: number
+
+***note these properties for parameters and variables are just examples, you can use whatever key values that your pipeline will accept@!"
 
   steps:
     - id: fetch
