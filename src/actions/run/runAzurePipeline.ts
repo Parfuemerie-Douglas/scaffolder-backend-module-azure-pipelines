@@ -20,14 +20,34 @@ import { createTemplateAction } from "@backstage/plugin-scaffolder-node";
 
 import fetch from "node-fetch";
 
+interface RunPipelineRequest {
+  previewRun?: boolean;
+  resources?: {
+    repositories: {
+      self: {
+        refName: string;
+        repositoryId?: string;
+        repositoryType?: string;
+      };
+    };
+  };
+  templateParameters?: {
+    [key: string]: string;
+  };
+  variables?: {
+    [key: string]: string;
+  };
+  yamlOverrides?: string;
+}
+
 export const runAzurePipelineAction = (options: {
   integrations: ScmIntegrationRegistry;
 }) => {
   const { integrations } = options;
 
-  async function checkPipelineStatus(organization: string, project: string, runId: number, token: string): Promise<boolean> {
+  async function checkPipelineStatus(host: string, organization: string, project: string, runId: number, token: string): Promise<boolean> {
     const response = await fetch(
-      `https://dev.azure.com/${organization}/${project}/_apis/build/builds/${runId}?api-version=6.1-preview.6`,
+      `https://${host}/${organization}/${project}/_apis/build/builds/${runId}?api-version=6.1-preview.6`,
       {
         headers: {
           Authorization: `Basic ${Buffer.from(`PAT:${token}`).toString("base64")}`,
@@ -58,7 +78,8 @@ export const runAzurePipelineAction = (options: {
     project: string;
     branch?: string;
     token?: string;
-    values?: object;
+    pipelineParameters?: object;
+    pipelineVariables?: object;
   }>({
     id: "azure:pipeline:run",
     schema: {
@@ -100,10 +121,15 @@ export const runAzurePipelineAction = (options: {
             type: "string",
             description: "The token to use for authorization.",
           },
-          values: {
-            title: "Values",
+          pipelineParameters: {
+            title: "Pipeline Parameters",
             type: "object",
-            description: "The values you need as parameters on the request to azure.",
+            description: "The values you need as parameters on the request to start a build.",
+          },
+          pipelineVariables: {
+            title: "Pipeline Variables",
+            type: "object",
+            description: "The values you need as variables on the request to start a build.",
           },
         },
       },
@@ -115,7 +141,8 @@ export const runAzurePipelineAction = (options: {
         pipelineId,
         project,
         branch,
-        values
+        pipelineParameters,
+        pipelineVariables,
       } = ctx.input;
 
       const host = server ?? "dev.azure.com";
@@ -135,24 +162,25 @@ export const runAzurePipelineAction = (options: {
 
       ctx.logger.info(`Running Azure pipeline with the ID ${pipelineId}.`);
 
-      let body: string;
-      if (values) {
-        body = JSON.stringify(values);
-      } else {
-        body = JSON.stringify({
-          resources: {
-            repositories: {
-              self: {
-                refName: `refs/heads/${branch ?? "main"}`,
-              },
+      const request: RunPipelineRequest = {
+        resources: {
+          repositories: {
+            self: {
+              refName: `refs/heads/${branch ?? "main"}`,
             },
           },
-        });
-      }
+        },
+        templateParameters: pipelineParameters as Record<string, string>,
+        variables: pipelineVariables as Record<string, string>,
+        yamlOverrides: "",
+      };
+
+      const body = JSON.stringify(request);
+
       // See the Azure DevOps documentation for more information about the REST API:
       // https://docs.microsoft.com/en-us/rest/api/azure/devops/pipelines/runs/run-pipeline?view=azure-devops-rest-6.1
       await fetch(
-        `https://dev.azure.com/${organization}/${project}/_apis/pipelines/${pipelineId}/runs?api-version=6.1-preview.1`,
+        `https://${host}/${organization}/${project}/_apis/pipelines/${pipelineId}/runs?api-version=6.1-preview.1`,
         {
           method: "POST",
           headers: {
@@ -178,7 +206,7 @@ export const runAzurePipelineAction = (options: {
         const pipelineRunId = json.id;
 
         // Poll the pipeline status until it completes.
-        return checkPipelineStatus(organization, project, pipelineRunId, token);
+        return checkPipelineStatus(host, organization, project, pipelineRunId, token);
       })
         .then((success) => {
           if (success) {

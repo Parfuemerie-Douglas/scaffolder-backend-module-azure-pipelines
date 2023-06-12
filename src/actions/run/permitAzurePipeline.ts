@@ -130,7 +130,7 @@ export const permitAzurePipelineAction = (options: {
       // See the Azure DevOps documentation for more information about the REST API:
       // https://docs.microsoft.com/en-us/rest/api/azure/devops/approvalsandchecks/pipeline-permissions/update-pipeline-permisions-for-resource?view=azure-devops-rest-7.1
       await fetch(
-        `https://dev.azure.com/${organization}/${project}/_apis/pipelines/pipelinepermissions/${resourceType}/${resourceId}?api-version=7.1-preview.1`,
+        `https://${host}/${organization}/${project}/_apis/pipelines/pipelinepermissions/${resourceType}/${resourceId}?api-version=7.1-preview.1`,
         {
           method: "PATCH",
           headers: {
