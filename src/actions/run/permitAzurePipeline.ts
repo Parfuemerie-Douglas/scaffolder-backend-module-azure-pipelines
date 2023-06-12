@@ -26,6 +26,7 @@ export const permitAzurePipelineAction = (options: {
   const { integrations } = options;
 
   return createTemplateAction<{
+    server: string;
     organization: string;
     project: string;
     resourceId: string;
@@ -47,6 +48,11 @@ export const permitAzurePipelineAction = (options: {
         ],
         type: "object",
         properties: {
+          server: {
+            type: "string",
+            title: "Server hostname",
+            description: "The hostname of the Azure DevOps service. Defaults to dev.azure.com",
+          },
           organization: {
             type: "string",
             title: "Organization",
@@ -87,6 +93,7 @@ export const permitAzurePipelineAction = (options: {
     },
     async handler(ctx) {
       const {
+        server,
         organization,
         project,
         resourceId,
@@ -95,7 +102,7 @@ export const permitAzurePipelineAction = (options: {
         pipelineId,
       } = ctx.input;
 
-      const host = "dev.azure.com";
+      const host = server ?? "dev.azure.com";
       const integrationConfig = integrations.azure.byHost(host);
 
       if (!integrationConfig) {
