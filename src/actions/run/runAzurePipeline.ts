@@ -65,7 +65,7 @@ export const runAzurePipelineAction = (options: {
     } else if (status === "inProgress" || status === "notStarted") {
       // If the pipeline is still running, wait 10 seconds and check again.
       await new Promise((resolve) => setTimeout(resolve, 10000));
-      return checkPipelineStatus(organization, project, runId, token);
+      return checkPipelineStatus(host, organization, project, runId, token);
     } else {
       throw new Error(`Azure pipeline failed with status: ${status}.`);
     }
