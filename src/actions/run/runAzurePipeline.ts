@@ -124,11 +124,6 @@ export const runAzurePipelineAction = (options: {
             type: "object",
             description: "The values you need as parameters on the request to start a build.",
           },
-          pipelineVariables: {
-            title: "Pipeline Variables",
-            type: "object",
-            description: "The values you need as variables on the request to start a build.",
-          },
         },
       },
     },
@@ -140,7 +135,6 @@ export const runAzurePipelineAction = (options: {
         project,
         branch,
         pipelineParameters,
-        pipelineVariables,
       } = ctx.input;
 
       const host = server ?? "dev.azure.com";
@@ -160,8 +154,6 @@ export const runAzurePipelineAction = (options: {
 
       ctx.logger.info(`Running Azure pipeline with the ID ${pipelineId}.`);
       
-      const variablesString = JSON.stringify(pipelineVariables)
-
       const request: RunPipelineRequest = {
         resources: {
           repositories: {
@@ -173,10 +165,6 @@ export const runAzurePipelineAction = (options: {
         templateParameters: pipelineParameters as Record<string, string>,
         yamlOverrides: "",
       };
-
-      if (variablesString !== null) {
-        request.variables = variablesString;
-      }
 
       const body = JSON.stringify(request);
 
