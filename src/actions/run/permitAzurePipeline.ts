@@ -51,7 +51,7 @@ export const permitAzurePipelineAction = (options: {
         properties: {
           permitsApiVersion: {
             type: "string",
-            title: "Run API version",
+            title: "Permits API version",
             description: "The Azure Permits Pipeline API version to use. Defaults to 7.1-preview.1",
           },
           server: {
