@@ -235,3 +235,24 @@ to `true`.
 
 You can find a list of all registred actions including their parameters at the
 `/create/actions` route in your Backstage application.
+
+## API version compatibility
+
+- Create Pipeline API: 
+  - 6.0-preview.1
+  - 7.0
+  - 7.1
+
+- Run Pipeline API:
+  - 6.0-preview.1
+  - 7.0
+  - 7.1
+
+- Builds API:
+  - 6.0
+  - 7.0
+  - 7.1-preview.1
+
+- Permits Pipeline API:
+  - 7.0-preview.1
+  - 7.1-preview.1
