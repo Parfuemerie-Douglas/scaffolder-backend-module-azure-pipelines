@@ -26,6 +26,7 @@ export const createAzurePipelineAction = (options: {
   const { integrations } = options;
 
   return createTemplateAction<{
+    createApiVersion: string
     server: string;
     organization: string;
     project: string;
@@ -49,6 +50,11 @@ export const createAzurePipelineAction = (options: {
         ],
         type: "object",
         properties: {
+          createApiVersion: {
+            type: "string",
+            title: "Create API version",
+            description: "The Azure Create Pipeline API version to use. Defaults to 6.1-preview.1",
+          },
           server: {
             type: "string",
             title: "Server hostname",
@@ -99,6 +105,7 @@ export const createAzurePipelineAction = (options: {
     },
     async handler(ctx) {
       const {
+        createApiVersion,
         server,
         organization,
         project,
@@ -110,6 +117,7 @@ export const createAzurePipelineAction = (options: {
       } = ctx.input;
 
       const host = server ?? "dev.azure.com";
+      const apiVersion = createApiVersion ?? "6.1-preview.1";
       const integrationConfig = integrations.azure.byHost(host);
 
       if (!integrationConfig) {
@@ -131,7 +139,7 @@ export const createAzurePipelineAction = (options: {
       // See the Azure DevOps documentation for more information about the REST API:
       // https://docs.microsoft.com/en-us/rest/api/azure/devops/pipelines/pipelines/create?view=azure-devops-rest-6.1
       await fetch(
-        `https://${host}/${organization}/${project}/_apis/pipelines?api-version=6.1-preview.1`,
+        `https://${host}/${organization}/${project}/_apis/pipelines?api-version=${apiVersion}`,
         {
           method: "POST",
           headers: {

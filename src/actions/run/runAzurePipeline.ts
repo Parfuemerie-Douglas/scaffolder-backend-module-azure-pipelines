@@ -38,14 +38,19 @@ interface RunPipelineRequest {
   yamlOverrides?: string;
 }
 
+interface ApiVersions {
+  runApiVersion: string,
+  buildApiVersion: string
+}
+
 export const runAzurePipelineAction = (options: {
   integrations: ScmIntegrationRegistry;
 }) => {
   const { integrations } = options;
 
-  async function checkPipelineStatus(host: string, organization: string, project: string, runId: number, token: string): Promise<boolean> {
+  async function checkPipelineStatus(host: string, organization: string, project: string, runId: number, token: string, buildApiVersion: string): Promise<boolean> {
     const response = await fetch(
-      `https://${host}/${organization}/${project}/_apis/build/builds/${runId}?api-version=6.1-preview.6`,
+      `https://${host}/${organization}/${project}/_apis/build/builds/${runId}?api-version=${buildApiVersion}`,
       {
         headers: {
           Authorization: `Basic ${Buffer.from(`PAT:${token}`).toString("base64")}`,
@@ -63,13 +68,15 @@ export const runAzurePipelineAction = (options: {
     } else if (status === "inProgress" || status === "notStarted") {
       // If the pipeline is still running, wait 10 seconds and check again.
       await new Promise((resolve) => setTimeout(resolve, 10000));
-      return checkPipelineStatus(host, organization, project, runId, token);
+      return checkPipelineStatus(host, organization, project, runId, token,buildApiVersion);
     } else {
       throw new Error(`Azure pipeline failed with status: ${status}.`);
     }
   }
 
   return createTemplateAction<{
+    runApiVersion: string,
+    buildApiVersion: string
     server: string;
     organization: string;
     pipelineId: string;
@@ -89,6 +96,16 @@ export const runAzurePipelineAction = (options: {
         ],
         type: "object",
         properties: {
+          runApiVersion: {
+            type: "string",
+            title: "Run API version",
+            description: "The Azure Run Pipeline API version to use. Defaults to 7.0",
+          },
+          buildApiVersion: {
+            type: "string",
+            title: "Build API version",
+            description: "The Builds API version to use. Defaults to 6.1-preview.6",
+          },
           server: {
             type: "string",
             title: "Server hostname",
@@ -129,6 +146,8 @@ export const runAzurePipelineAction = (options: {
     },
     async handler(ctx) {
       const {
+        runApiVersion,
+        buildApiVersion,
         server,
         organization,
         pipelineId,
@@ -138,6 +157,10 @@ export const runAzurePipelineAction = (options: {
       } = ctx.input;
 
       const host = server ?? "dev.azure.com";
+      const apiVersions: ApiVersions = {
+        runApiVersion: runApiVersion ?? "7.0",
+        buildApiVersion: buildApiVersion ?? "6.1-preview.6"
+      }
       const integrationConfig = integrations.azure.byHost(host);
 
       if (!integrationConfig) {
@@ -171,7 +194,7 @@ export const runAzurePipelineAction = (options: {
       // See the Azure DevOps documentation for more information about the REST API:
       // https://docs.microsoft.com/en-us/rest/api/azure/devops/pipelines/runs/run-pipeline?view=azure-devops-rest-7.0
       await fetch(
-        `https://${host}/${organization}/${project}/_apis/pipelines/${pipelineId}/runs?api-version=7.0`,
+        `https://${host}/${organization}/${project}/_apis/pipelines/${pipelineId}/runs?api-version=${apiVersions.runApiVersion}`,
         {
           method: "POST",
           headers: {
@@ -197,7 +220,7 @@ export const runAzurePipelineAction = (options: {
         const pipelineRunId = json.id;
 
         // Poll the pipeline status until it completes.
-        return checkPipelineStatus(host, organization, project, pipelineRunId, token);
+        return checkPipelineStatus(host, organization, project, pipelineRunId, token, apiVersions.buildApiVersion);
       })
         .then((success) => {
           if (success) {
