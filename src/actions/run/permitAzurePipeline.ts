@@ -26,6 +26,7 @@ export const permitAzurePipelineAction = (options: {
   const { integrations } = options;
 
   return createTemplateAction<{
+    permitsApiVersion: string
     server: string;
     organization: string;
     project: string;
@@ -48,6 +49,11 @@ export const permitAzurePipelineAction = (options: {
         ],
         type: "object",
         properties: {
+          permitsApiVersion: {
+            type: "string",
+            title: "Permits API version",
+            description: "The Azure Permits Pipeline API version to use. Defaults to 7.1-preview.1",
+          },
           server: {
             type: "string",
             title: "Server hostname",
@@ -93,6 +99,7 @@ export const permitAzurePipelineAction = (options: {
     },
     async handler(ctx) {
       const {
+        permitsApiVersion,
         server,
         organization,
         project,
@@ -103,6 +110,7 @@ export const permitAzurePipelineAction = (options: {
       } = ctx.input;
 
       const host = server ?? "dev.azure.com";
+      const apiVersion = permitsApiVersion ?? "7.1-preview.1";
       const integrationConfig = integrations.azure.byHost(host);
 
       if (!integrationConfig) {
@@ -130,7 +138,7 @@ export const permitAzurePipelineAction = (options: {
       // See the Azure DevOps documentation for more information about the REST API:
       // https://docs.microsoft.com/en-us/rest/api/azure/devops/approvalsandchecks/pipeline-permissions/update-pipeline-permisions-for-resource?view=azure-devops-rest-7.1
       await fetch(
-        `https://${host}/${organization}/${project}/_apis/pipelines/pipelinepermissions/${resourceType}/${resourceId}?api-version=7.1-preview.1`,
+        `https://${host}/${organization}/${project}/_apis/pipelines/pipelinepermissions/${resourceType}/${resourceId}?api-version=${apiVersion}`,
         {
           method: "PATCH",
           headers: {
