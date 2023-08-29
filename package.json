@@ -39,17 +39,17 @@
   },
   "homepage": "https://github.com/Parfuemerie-Douglas/scaffolder-backend-module-azure-pipelines#readme",
   "dependencies": {
-    "@backstage/backend-common": "^0.18.3",
-    "@backstage/errors": "^1.1.5",
-    "@backstage/integration": "^1.4.5",
-    "@backstage/plugin-scaffolder-backend": "^1.13.1",
-    "@backstage/plugin-scaffolder-node": "^0.1.1", 
-    "@backstage/types": "^1.0.2",
+    "@backstage/backend-common": "^0.19.4",
+    "@backstage/errors": "^1.2.1",
+    "@backstage/integration": "^1.6.2",
+    "@backstage/plugin-scaffolder-backend": "^1.16.5",
+    "@backstage/plugin-scaffolder-node": "^0.2.2",
+    "@backstage/types": "^1.1.0",
     "node-fetch": "^2.6.2"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.22.4",
-    "@types/node-fetch": "^2.6.2"    
+    "@backstage/cli": "^0.22.12",
+    "@types/node-fetch": "^2.6.2"
   },
   "dependenciesMeta": {
     "buildcheck@0.0.4": {
