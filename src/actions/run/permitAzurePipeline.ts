@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import { InputError } from "@backstage/errors";
-import { ScmIntegrationRegistry } from "@backstage/integration";
+import {  DefaultAzureDevOpsCredentialsProvider, ScmIntegrationRegistry } from "@backstage/integration";
 import { createTemplateAction } from "@backstage/plugin-scaffolder-node";
 
 import fetch from "node-fetch";
@@ -54,11 +53,6 @@ export const permitAzurePipelineAction = (options: {
             title: "Permits API version",
             description: "The Azure Permits Pipeline API version to use. Defaults to 7.1-preview.1",
           },
-          server: {
-            type: "string",
-            title: "Server hostname",
-            description: "The hostname of the Azure DevOps service. Defaults to dev.azure.com",
-          },
           organization: {
             type: "string",
             title: "Organization",
@@ -89,11 +83,6 @@ export const permitAzurePipelineAction = (options: {
             title: "Pipeline ID",
             description: "The pipeline ID.",
           },
-          token: {
-            title: "Authenticatino Token",
-            type: "string",
-            description: "The token to use for authorization.",
-          },
         },
       },
     },
@@ -111,19 +100,10 @@ export const permitAzurePipelineAction = (options: {
 
       const host = server ?? "dev.azure.com";
       const apiVersion = permitsApiVersion ?? "7.1-preview.1";
-      const integrationConfig = integrations.azure.byHost(host);
-
-      if (!integrationConfig) {
-        throw new InputError(
-          `No matching integration configuration for host ${host}, please check your integrations config`
-        );
-      }
-
-      if (!integrationConfig.config.token && !ctx.input.token) {
-        throw new InputError(`No token provided for Azure Integration ${host}`);
-      }
-
-      const token = ctx.input.token ?? integrationConfig.config.token!;
+      const provider = DefaultAzureDevOpsCredentialsProvider.fromIntegrations(integrations);
+      const url = `https://${host}/${ctx.input.organization}`;
+      const credentials = await provider.getCredentials({ url: url });
+      const token = ctx.input.token ?? credentials?.token;
 
       if (ctx.input.authorized === true) {
         ctx.logger.info(
