@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import { InputError } from "@backstage/errors";
-import { ScmIntegrationRegistry } from "@backstage/integration";
+import {  DefaultAzureDevOpsCredentialsProvider, ScmIntegrationRegistry } from "@backstage/integration";
 import { createTemplateAction } from "@backstage/plugin-scaffolder-node";
 
 import fetch from "node-fetch";
@@ -48,7 +47,7 @@ export const runAzurePipelineAction = (options: {
 }) => {
   const { integrations } = options;
 
-  async function checkPipelineStatus(host: string, organization: string, project: string, runId: number, token: string, buildApiVersion: string): Promise<boolean> {
+  async function checkPipelineStatus(host: string, organization: string, project: string, runId: number, token: string | null | undefined, buildApiVersion: string): Promise<boolean> {
     const response = await fetch(
       `https://${host}/${organization}/${project}/_apis/build/builds/${runId}?api-version=${buildApiVersion}`,
       {
@@ -69,9 +68,8 @@ export const runAzurePipelineAction = (options: {
       // If the pipeline is still running, wait 10 seconds and check again.
       await new Promise((resolve) => setTimeout(resolve, 10000));
       return checkPipelineStatus(host, organization, project, runId, token,buildApiVersion);
-    } else {
-      throw new Error(`Azure pipeline failed with status: ${status}.`);
     }
+    throw new Error(`Azure pipeline failed with status: ${status}.`);
   }
 
   return createTemplateAction<{
@@ -106,11 +104,6 @@ export const runAzurePipelineAction = (options: {
             title: "Build API version",
             description: "The Builds API version to use. Defaults to 6.1-preview.6",
           },
-          server: {
-            type: "string",
-            title: "Server hostname",
-            description: "The hostname of the Azure DevOps service. Defaults to dev.azure.com",
-          },
           organization: {
             type: "string",
             title: "Organization",
@@ -130,11 +123,6 @@ export const runAzurePipelineAction = (options: {
             title: "Repository Branch",
             type: "string",
             description: "The branch of the pipeline's repository.",
-          },
-          token: {
-            title: "Authentication Token",
-            type: "string",
-            description: "The token to use for authorization.",
           },
           pipelineParameters: {
             title: "Pipeline Parameters",
@@ -161,19 +149,10 @@ export const runAzurePipelineAction = (options: {
         runApiVersion: runApiVersion ?? "7.0",
         buildApiVersion: buildApiVersion ?? "6.1-preview.6"
       }
-      const integrationConfig = integrations.azure.byHost(host);
-
-      if (!integrationConfig) {
-        throw new InputError(
-          `No matching integration configuration for host ${host}, please check your integrations config`
-        );
-      }
-
-      if (!integrationConfig.config.token && !ctx.input.token) {
-        throw new InputError(`No token provided for Azure Integration ${host}`);
-      }
-
-      const token = ctx.input.token ?? integrationConfig.config.token!;
+      const provider = DefaultAzureDevOpsCredentialsProvider.fromIntegrations(integrations);
+      const url = `https://${host}/${ctx.input.organization}`;
+      const credentials = await provider.getCredentials({ url: url });
+      const token = ctx.input.token ?? credentials?.token;
 
       ctx.logger.info(`Running Azure pipeline with the ID ${pipelineId}.`);
       
@@ -210,9 +189,8 @@ export const runAzurePipelineAction = (options: {
       ).then((response) => {
         if (response.ok) {
           return response.json();
-        } else {
-          throw new Error(`Failed to run Azure pipeline. Status code ${response.status}.`);
         }
+        throw new Error(`Failed to run Azure pipeline. Status code ${response.status}.`);
       }).then((json) => {
         const pipelineUrl = json._links.web.href;
         ctx.logger.info(`Successfully started Azure pipeline run: ${pipelineUrl}`);
