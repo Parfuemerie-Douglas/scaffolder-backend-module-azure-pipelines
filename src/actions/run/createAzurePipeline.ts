@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import { InputError } from "@backstage/errors";
-import { ScmIntegrationRegistry } from "@backstage/integration";
+import {  DefaultAzureDevOpsCredentialsProvider, ScmIntegrationRegistry } from "@backstage/integration";
 import { createTemplateAction } from "@backstage/plugin-scaffolder-node";
 
 import fetch from "node-fetch";
@@ -55,11 +54,6 @@ export const createAzurePipelineAction = (options: {
             title: "Create API version",
             description: "The Azure Create Pipeline API version to use. Defaults to 6.1-preview.1",
           },
-          server: {
-            type: "string",
-            title: "Server hostname",
-            description: "The hostname of the Azure DevOps service. Defaults to dev.azure.com",
-          },
           organization: {
             type: "string",
             title: "Organization",
@@ -95,11 +89,6 @@ export const createAzurePipelineAction = (options: {
             title: "Azure DevOps Pipelines Definition",
             description: "The location of the Azure DevOps Pipeline definition file. Defaults to /azure-pipelines.yaml",
           },
-          token: {
-            title: "Authentication Token",
-            type: "string",
-            description: "The token to use for authorization.",
-          },
         },
       },
     },
@@ -118,19 +107,10 @@ export const createAzurePipelineAction = (options: {
 
       const host = server ?? "dev.azure.com";
       const apiVersion = createApiVersion ?? "6.1-preview.1";
-      const integrationConfig = integrations.azure.byHost(host);
-
-      if (!integrationConfig) {
-        throw new InputError(
-          `No matching integration configuration for host ${host}, please check your integrations config`
-        );
-      }
-
-      if (!integrationConfig.config.token && !ctx.input.token) {
-        throw new InputError(`No token provided for Azure Integration ${host}`);
-      }
-
-      const token = ctx.input.token ?? integrationConfig.config.token!;
+      const provider = DefaultAzureDevOpsCredentialsProvider.fromIntegrations(integrations);
+      const url = `https://${host}/${ctx.input.organization}`;
+      const credentials = await provider.getCredentials({ url: url });
+      const token = ctx.input.token ?? credentials?.token;
 
       ctx.logger.info(
         `Creating an Azure pipeline for the repository ${repositoryName} with the ID ${repositoryId}.`

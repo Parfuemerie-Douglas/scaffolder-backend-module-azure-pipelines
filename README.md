@@ -85,7 +85,8 @@ permission for `Service Connections`. Simply add the PAT to your
 integrations:
   azure:
     - host: dev.azure.com
-      token: ${AZURE_TOKEN}
+      credentials:
+        - personalAccessToken: ${AZURE_TOKEN}
 ```
 
 Read more on integrations in Backstage in the [Integrations
