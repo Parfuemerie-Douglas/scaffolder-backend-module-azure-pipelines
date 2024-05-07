@@ -53,6 +53,11 @@ export const permitAzurePipelineAction = (options: {
             title: "Permits API version",
             description: "The Azure Permits Pipeline API version to use. Defaults to 7.1-preview.1",
           },
+          server: {
+            type: "string",
+            title: "Host",
+            description: "The host of Azure DevOps. Defaults to dev.azure.com",
+          },       
           organization: {
             type: "string",
             title: "Organization",
