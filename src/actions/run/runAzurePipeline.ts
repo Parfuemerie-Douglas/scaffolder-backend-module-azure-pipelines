@@ -104,6 +104,11 @@ export const runAzurePipelineAction = (options: {
             title: "Build API version",
             description: "The Builds API version to use. Defaults to 6.1-preview.6",
           },
+          server: {
+            type: "string",
+            title: "Host",
+            description: "The host of Azure DevOps. Defaults to dev.azure.com",
+          },
           organization: {
             type: "string",
             title: "Organization",
