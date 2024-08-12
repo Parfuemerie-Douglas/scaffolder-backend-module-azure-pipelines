@@ -17,8 +17,6 @@
 import {  DefaultAzureDevOpsCredentialsProvider, ScmIntegrationRegistry } from "@backstage/integration";
 import { createTemplateAction } from "@backstage/plugin-scaffolder-node";
 
-import fetch from "node-fetch";
-
 export const permitAzurePipelineAction = (options: {
   integrations: ScmIntegrationRegistry;
 }) => {
@@ -53,11 +51,6 @@ export const permitAzurePipelineAction = (options: {
             title: "Permits API version",
             description: "The Azure Permits Pipeline API version to use. Defaults to 7.1-preview.1",
           },
-          server: {
-            type: "string",
-            title: "Host",
-            description: "The host of Azure DevOps. Defaults to dev.azure.com",
-          },       
           organization: {
             type: "string",
             title: "Organization",
@@ -120,6 +113,8 @@ export const permitAzurePipelineAction = (options: {
         );
       }
 
+      const fetchModule = await import("node-fetch");
+      const fetch: typeof fetchModule.default = fetchModule.default;
       // See the Azure DevOps documentation for more information about the REST API:
       // https://docs.microsoft.com/en-us/rest/api/azure/devops/approvalsandchecks/pipeline-permissions/update-pipeline-permisions-for-resource?view=azure-devops-rest-7.1
       await fetch(
@@ -143,7 +138,7 @@ export const permitAzurePipelineAction = (options: {
             ],
           }),
         }
-      ).then((response) => {
+      ).then((response: any) => {
         if (response.ok) {
           ctx.logger.info(
             `Successfully changed the Azure pipeline permissions.`

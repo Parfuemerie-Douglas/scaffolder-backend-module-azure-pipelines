@@ -17,8 +17,6 @@
 import {  DefaultAzureDevOpsCredentialsProvider, ScmIntegrationRegistry } from "@backstage/integration";
 import { createTemplateAction } from "@backstage/plugin-scaffolder-node";
 
-import fetch from "node-fetch";
-
 interface RunPipelineRequest {
   previewRun?: boolean;
   resources?: {
@@ -60,7 +58,7 @@ export const runAzurePipelineAction = (options: {
     if (!response.ok) {
       throw new Error(`Failed to retrieve pipeline run status. Status code ${response.status}.`);
     }
-    const json = await response.json();
+    const json: any = await response.json();
     const status = json.status;
     if (status === "completed") {
       return json.result === "succeeded";
@@ -103,11 +101,6 @@ export const runAzurePipelineAction = (options: {
             type: "string",
             title: "Build API version",
             description: "The Builds API version to use. Defaults to 6.1-preview.6",
-          },
-          server: {
-            type: "string",
-            title: "Host",
-            description: "The host of Azure DevOps. Defaults to dev.azure.com",
           },
           organization: {
             type: "string",
@@ -175,6 +168,9 @@ export const runAzurePipelineAction = (options: {
 
       const body = JSON.stringify(request);
 
+
+      const fetchModule = await import("node-fetch");
+      const fetch: typeof fetchModule.default = fetchModule.default;
       // See the Azure DevOps documentation for more information about the REST API:
       // https://docs.microsoft.com/en-us/rest/api/azure/devops/pipelines/runs/run-pipeline?view=azure-devops-rest-7.0
       await fetch(
@@ -191,12 +187,12 @@ export const runAzurePipelineAction = (options: {
           },
           body,
         }
-      ).then((response) => {
+      ).then((response: any) => {
         if (response.ok) {
           return response.json();
         }
         throw new Error(`Failed to run Azure pipeline. Status code ${response.status}.`);
-      }).then((json) => {
+      }).then((json: any) => {
         const pipelineUrl = json._links.web.href;
         ctx.logger.info(`Successfully started Azure pipeline run: ${pipelineUrl}`);
 
@@ -205,14 +201,14 @@ export const runAzurePipelineAction = (options: {
         // Poll the pipeline status until it completes.
         return checkPipelineStatus(host, organization, project, pipelineRunId, token, apiVersions.buildApiVersion);
       })
-        .then((success) => {
+        .then((success: any) => {
           if (success) {
             ctx.logger.info(`Azure pipeline completed successfully.`);
           } else {
             ctx.logger.error(`Azure pipeline failed.`);
           }
         })
-        .catch((error) => {
+        .catch((error: any) => {
           // Handle any errors that occurred during the pipeline run or status check.
           ctx.logger.error(error.message);
         });

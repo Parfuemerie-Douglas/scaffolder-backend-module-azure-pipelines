@@ -17,8 +17,6 @@
 import {  DefaultAzureDevOpsCredentialsProvider, ScmIntegrationRegistry } from "@backstage/integration";
 import { createTemplateAction } from "@backstage/plugin-scaffolder-node";
 
-import fetch from "node-fetch";
-
 export const createAzurePipelineAction = (options: {
   integrations: ScmIntegrationRegistry;
 }) => {
@@ -54,11 +52,6 @@ export const createAzurePipelineAction = (options: {
             title: "Create API version",
             description: "The Azure Create Pipeline API version to use. Defaults to 6.1-preview.1",
           },
-          server: {
-            type: "string",
-            title: "Host",
-            description: "The host of Azure DevOps. Defaults to dev.azure.com",
-          },          
           organization: {
             type: "string",
             title: "Organization",
@@ -121,6 +114,8 @@ export const createAzurePipelineAction = (options: {
         `Creating an Azure pipeline for the repository ${repositoryName} with the ID ${repositoryId}.`
       );
 
+      const fetchModule = await import("node-fetch");
+      const fetch: typeof fetchModule.default = fetchModule.default;
       // See the Azure DevOps documentation for more information about the REST API:
       // https://docs.microsoft.com/en-us/rest/api/azure/devops/pipelines/pipelines/create?view=azure-devops-rest-6.1
       await fetch(
@@ -150,7 +145,7 @@ export const createAzurePipelineAction = (options: {
           }),
         }
       )
-        .then((response) => {
+        .then((response: any) => {
           if (response.ok) {
             ctx.logger.info(
               `Successfully created ${name} Azure pipeline in ${folder}.`
@@ -163,7 +158,7 @@ export const createAzurePipelineAction = (options: {
 
           return response.json();
         })
-        .then((data) => {
+        .then((data: any) => {
           ctx.logger.info(`The Azure pipeline ID is ${data.id}.`);
 
           ctx.output("pipelineId", data.id.toString());
