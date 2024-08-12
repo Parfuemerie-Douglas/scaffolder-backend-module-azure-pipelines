@@ -54,6 +54,11 @@ export const createAzurePipelineAction = (options: {
             title: "Create API version",
             description: "The Azure Create Pipeline API version to use. Defaults to 6.1-preview.1",
           },
+          server: {
+            type: "string",
+            title: "Host",
+            description: "The host of Azure DevOps. Defaults to dev.azure.com",
+          },          
           organization: {
             type: "string",
             title: "Organization",
