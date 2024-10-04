@@ -14,4 +14,5 @@
  * limitations under the License.
  */
 
+export { scaffolderModuleAzurePipelines as default } from './module';
 export * from "./actions";
