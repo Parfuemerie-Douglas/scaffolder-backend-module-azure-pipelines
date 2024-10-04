@@ -35,40 +35,16 @@ yarn add --cwd packages/backend @parfuemerie-douglas/scaffolder-backend-module-a
 ```
 
 Configure the actions (you can check the
-[docs](https://backstage.io/docs/features/software-templates/writing-custom-actions#registering-custom-actions)
+[docs](https://backstage.io/docs/features/software-templates/writing-custom-actions#register-action-with-new-backend-system)
 to see all options):
 
 ```typescript
-// packages/backend/src/plugins/scaffolder.ts
+// packages/backend/src/index.ts
+const backend = createBackend();
 
-import {
-  createAzurePipelineAction,
-  permitAzurePipelineAction,
-  runAzurePipelineAction,
-} from "@parfuemerie-douglas/scaffolder-backend-module-azure-pipelines";
+// ...
 
-const actions = [
-  createAzurePipelineAction({ integrations }),
-  permitAzurePipelineAction({ integrations }),
-  runAzurePipelineAction({ integrations }),
-  ...createBuiltInActions({
-    containerRunner,
-    catalogClient,
-    integrations,
-    config: env.config,
-    reader: env.reader,
-  }),
-];
-
-return await createRouter({
-  containerRunner,
-  catalogClient,
-  actions,
-  logger: env.logger,
-  config: env.config,
-  database: env.database,
-  reader: env.reader,
-});
+backend.add(import('@parfuemerie-douglas/scaffolder-backend-module-azure-pipelines'))
 ```
 
 The Azure pipeline actions use an [Azure PAT (personal access
